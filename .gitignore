@@ -1,0 +1,35 @@
+# Dependencies - NUNCA subir
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env*
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary
+*.tmp
+*.temp
+
+# Analysis files and backups
+analyze-deps.*
+check-project-size.*
+package-minimal.json
+index.original.html
+README_migracion.txt
+
+# Original project folder
+Sistema_Gestión_de_condominio/
