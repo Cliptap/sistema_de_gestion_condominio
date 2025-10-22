@@ -1,0 +1,18 @@
+# Dockerfile para React + Vite development
+
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Instalar dependencias
+COPY package*.json ./
+RUN npm install
+
+# Copiar código fuente
+COPY . .
+
+# Exponer puerto
+EXPOSE 3000
+
+# Comando de desarrollo
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
