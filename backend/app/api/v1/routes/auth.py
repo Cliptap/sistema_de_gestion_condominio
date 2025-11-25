@@ -187,7 +187,8 @@ async def firebase_login(payload: FirebaseLoginRequest, db: Session = Depends(ge
         else:
             print("DEBUG: Verifying with Firebase Admin")
             from firebase_admin import auth
-            decoded_token = auth.verify_id_token(payload.id_token)
+            # Permitir una tolerancia de 60 segundos para problemas de sincronización de reloj
+            decoded_token = auth.verify_id_token(payload.id_token, clock_skew_seconds=60)
             
         email = decoded_token.get("email")
         print(f"DEBUG: Email extracted: {email}")
@@ -243,3 +244,43 @@ async def me(current_user: Usuario = Depends(get_current_active_user)) -> TokenU
         nombre_completo=current_user.nombre_completo,
         rol=_map_role(current_user.rol),
     )
+
+
+class PasswordResetRequest(BaseModel):
+    email: EmailStr
+    new_password: str = Field(min_length=6, max_length=128)
+
+
+@router.post(
+    "/admin/reset-password",
+    status_code=status.HTTP_200_OK,
+    include_in_schema=True,
+    tags=["Auth"],
+)
+async def admin_reset_password(
+    payload: PasswordResetRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Endpoint temporal de administración para resetear la contraseña de un usuario.
+    Úsalo sólo en desarrollo.
+    """
+    usuario = db.query(Usuario).filter(Usuario.email == payload.email).first()
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuario no encontrado",
+        )
+
+    usuario.password_hash = get_password_hash(payload.new_password)
+    try:
+        db.add(usuario)
+        db.commit()
+    except Exception as exc:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="No se pudo actualizar la contraseña",
+        ) from exc
+
+    return {"detail": f"Contraseña actualizada para {usuario.email}"}

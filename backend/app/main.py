@@ -38,8 +38,9 @@ app.add_middleware(
         "http://localhost:3001", 
         "http://localhost:8081",  # Expo web
         "http://127.0.0.1:3000", 
-        "http://127.0.0.1:3001",
         "http://127.0.0.1:8081",  # Expo web
+        "https://rhoda-unsolicitous-cythia.ngrok-free.dev",  # ngrok
+        "*",  # Permitir todos los orígenes (solo para desarrollo/demo)
     ],
     allow_credentials=True,  # Permite enviar cookies y headers de autenticación
     allow_methods=["*"],  # Permite todos los métodos HTTP (GET, POST, PUT, DELETE, etc.)
