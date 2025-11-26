@@ -561,8 +561,6 @@ pip install -r requirements.txt
 # Limpiar cache
 npm cache clean --force
 
-# Reiniciar Expo
-npm start --web
 ```
 
 ### Google Sign-In no funciona en APK Android
@@ -599,29 +597,6 @@ npm start --web
 6. ✅ **Mantener dependencias actualizadas**
 7. ✅ **Variables de entorno** para secretos (no en código)
 
----
-
-## 📝 Scripts Disponibles
-
-### Backend
-```bash
-uvicorn app.main:app --reload      # Desarrollo
-gunicorn app.main:app --workers 4  # Producción
-```
-
-### Frontend
-```bash
-npm run dev      # Desarrollo
-npm run build    # Compilar producción
-npm run preview  # Vista previa producción
-```
-
-### Mobile
-```bash
-npm start --web              # Expo Web
-npm start                    # Desarrollo
-eas build --platform android # Compilar APK
-```
 
 ---
 
@@ -635,17 +610,6 @@ eas build --platform android # Compilar APK
 
 ---
 
-## 📞 Soporte
-
-Para problemas:
-1. Revisar `/docs` para documentación detallada
-2. Revisar logs: `docker-compose logs backend`
-3. Consultar Swagger: http://localhost:8000/docs
-4. Revisar console en navegador (browser DevTools)
-
----
-
 **Desarrollado con ❤️ para la gestión eficiente de condominios**
 
 Última actualización: **Noviembre 2025**  
-Versión: **1.0.0**
