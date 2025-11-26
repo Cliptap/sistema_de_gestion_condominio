@@ -1,610 +1,651 @@
-# Sistema de Gestión de Condominio
+# EspacioAdmin - Sistema de Gestión de Condominios
 
-Sistema completo de gestión de condominios desarrollado con **FastAPI** (backend) y **React + Vite** (frontend), con base de datos **MySQL** y autenticación **JWT**.
+**Sistema completo de gestión de condominios** con backend **FastAPI**, frontend web **React + Vite**, aplicación móvil **React Native + Expo**, base de datos **PostgreSQL** y autenticación social **Firebase**.
 
-## 📋 Tabla de Contenidos
+---
 
-- [Características](#-características)
-- [Requisitos](#-requisitos)
-- [Instalación](#-instalación)
-- [Configuración](#-configuración)
-- [Uso](#-uso)
-- [Estructura del Proyecto](#-estructura-del-proyecto)
-- [Autenticación y Permisos](#-autenticación-y-permisos)
-- [API Endpoints](#-api-endpoints)
-- [Base de Datos](#-base-de-datos)
-- [Desarrollo](#-desarrollo)
-- [Docker](#-docker)
-- [Troubleshooting](#-troubleshooting)
+## 🚀 Inicio Rápido
 
-## ✨ Características
+### Con Docker Compose (Recomendado)
 
-- ✅ **Backend FastAPI** con documentación automática (Swagger/Redoc)
-- ✅ **Autenticación JWT** con bcrypt para encriptación de contraseñas
-- ✅ **Sistema de registro y login** obligatorio
-- ✅ **Modelo de datos relacional** con SQLAlchemy
-- ✅ **Migraciones con Alembic** para gestión de esquema
-- ✅ **Dockerización completa** (backend + MySQL)
-- ✅ **Frontend React** con integración completa
-- ✅ **Sistema de permisos por roles** (Residente, Conserje, Directiva, Administrador, Super Admin)
-- ✅ **Gestión de gastos comunes, pagos, multas, reservas y anuncios**
-- ✅ **Dashboard con estadísticas en tiempo real**
-- ✅ **Integración opcional con Google Calendar** para reservas
-
-## 🔧 Requisitos
-
-### Para Desarrollo Local
-
-- **Python 3.11+**
-- **Node.js 18+** y npm
-- **MySQL 8.0+** (o XAMPP con MySQL)
-- **Git**
-
-### Para Docker
-
-- **Docker** y **Docker Compose**
-
-## 🚀 Instalación
-
-### Opción 1: Docker Compose (Recomendado)
-
-1. **Clonar el repositorio:**
 ```bash
+# 1. Clonar repositorio
 git clone <repo-url>
 cd sistema_de_gestion_condominio
-```
 
-2. **Configurar variables de entorno:**
-Crear archivo `.env` en la raíz del proyecto:
-```env
-# Base de Datos
-DB_HOST=db
-DB_PORT=3306
-DB_USER=condominio_user
-DB_PASSWORD=condominio_pass
-DB_NAME=condominio_db
+# 2. Crear .env en la raíz
+cp .env.example .env
 
-# JWT
-JWT_SECRET_KEY=your-secret-key-change-in-production
-JWT_ALGORITHM=HS256
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=120
-
-# Google Calendar (Opcional)
-GOOGLE_CALENDAR_API_KEY=
-GOOGLE_CALENDAR_ID_MULTICANCHA=
-GOOGLE_CALENDAR_ID_QUINCHO=
-GOOGLE_CALENDAR_ID_SALA_EVENTOS=
-```
-
-3. **Iniciar los servicios:**
-```bash
+# 3. Iniciar servicios
 docker-compose up -d
+
+# 4. Acceder a:
+# Backend API: http://localhost:8000
+# Swagger Docs: http://localhost:8000/docs
+# Frontend: http://localhost:3000 (si está configurado)
 ```
 
-4. **Verificar que todo esté funcionando:**
-- Backend: http://localhost:8000
-- Documentación Swagger: http://localhost:8000/docs
-- Documentación ReDoc: http://localhost:8000/redoc
-- Frontend: http://localhost:3000 (si está configurado)
-
-### Opción 2: Desarrollo Local
+### Sin Docker (Desarrollo Local)
 
 #### Backend
-
-1. **Crear entorno virtual:**
 ```bash
 cd backend
 python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# Linux/Mac
-source .venv/bin/activate
-```
-
-2. **Instalar dependencias:**
-```bash
+.venv\Scripts\activate  # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
+uvicorn app.main:app --reload
 ```
 
-3. **Configurar variables de entorno:**
-Crear archivo `.env` en la raíz del proyecto (no en backend/):
-```env
-DB_HOST=127.0.0.1
-DB_PORT=3306
-DB_USER=root
-DB_PASSWORD=
-DB_NAME=condominio_db
-JWT_SECRET_KEY=your-secret-key-here
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=120
-```
-
-4. **Configurar base de datos:**
-- Asegúrate de que MySQL esté corriendo
-- Importa el script SQL: `database/condominio_db.sql`
-
-5. **Ejecutar migraciones:**
-```bash
-cd backend
-alembic upgrade head
-```
-
-6. **Iniciar el servidor:**
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-#### Frontend
-
-1. **Instalar dependencias:**
+#### Frontend Web
 ```bash
 cd frontend
 npm install
-```
-
-2. **Configurar variables de entorno (opcional):**
-Crear archivo `.env.local` en `frontend/`:
-```env
-VITE_API_URL=http://localhost:8000/api/v1
-```
-
-3. **Iniciar el servidor de desarrollo:**
-```bash
 npm run dev
 ```
 
-El frontend estará disponible en: http://localhost:3000
+#### App Móvil
+```bash
+cd mobile
+npm install
+npm start --web  # Para Expo Web (desarrollo)
+# O: eas build --platform android  # Para compilar APK
+```
+
+---
+
+## 📋 Tabla de Contenidos
+
+1. [Características](#-características)
+2. [Requisitos](#-requisitos)
+3. [Instalación Detallada](#-instalación-detallada)
+4. [Configuración](#-configuración)
+5. [Uso](#-uso)
+6. [Autenticación](#-autenticación)
+7. [API Endpoints](#-api-endpoints)
+8. [Estructura del Proyecto](#-estructura-del-proyecto)
+9. [Aplicación Móvil](#-aplicación-móvil)
+10. [Troubleshooting](#-troubleshooting)
+
+---
+
+## ✨ Características
+
+### Backend
+- ✅ **FastAPI** con Swagger automático
+- ✅ **PostgreSQL** como BD relacional
+- ✅ **JWT** para autenticación segura
+- ✅ **Firebase Admin SDK** para verificar Google Sign-In
+- ✅ **SQLAlchemy ORM** para manejo de datos
+- ✅ **CORS** configurado para múltiples orígenes
+
+### Frontend Web
+- ✅ **React 18+** con hooks
+- ✅ **Vite** como bundler rápido
+- ✅ **Tailwind CSS** para diseño responsivo
+- ✅ **React Router** para navegación
+- ✅ **Axios** para peticiones HTTP
+
+### Aplicación Móvil
+- ✅ **React Native + Expo** para iOS/Android
+- ✅ **Expo Web** para versión web
+- ✅ **Firebase Auth** con Google Sign-In
+- ✅ **expo-secure-store** para tokens seguros
+- ✅ **EAS Build** para compilación de APK
+
+### Funcionalidades
+- ✅ **Autenticación:** Email/contraseña + Google Sign-In
+- ✅ **Dashboard personalizado** según rol
+- ✅ **Gestión de gastos comunes**
+- ✅ **Gestión de pagos y multas**
+- ✅ **Reserva de espacios comunes**
+- ✅ **Sistema de anuncios**
+- ✅ **Control de acceso por roles**
+
+---
+
+## 🔧 Requisitos
+
+- **Python 3.11+**
+- **Node.js 18+** con npm
+- **PostgreSQL 14+** (o Docker)
+- **Git**
+- **Cuenta Firebase** (para Google Sign-In)
+- **Expo CLI:** `npm install -g eas-cli expo-cli`
+
+---
+
+## 💻 Instalación Detallada
+
+### 1. Backend
+
+```bash
+cd backend
+
+# Crear entorno virtual
+python -m venv .venv
+
+# Activar (Windows)
+.venv\Scripts\activate
+# O (Linux/Mac)
+source .venv/bin/activate
+
+# Instalar dependencias
+pip install -r requirements.txt
+
+# Configurar .env en la raíz del proyecto
+# (Ver sección de Configuración)
+
+# Iniciar servidor
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+**Acceder a:** http://localhost:8000
+- **Swagger:** http://localhost:8000/docs
+- **ReDoc:** http://localhost:8000/redoc
+
+### 2. Frontend Web
+
+```bash
+cd frontend
+
+# Instalar dependencias
+npm install
+
+# Crear .env.local (opcional)
+# VITE_API_URL=http://localhost:8000/api/v1
+
+# Iniciar desarrollo
+npm run dev
+```
+
+**Acceder a:** http://localhost:3000 o el puerto que indique Vite
+
+### 3. Aplicación Móvil
+
+```bash
+cd mobile
+
+# Instalar dependencias
+npm install
+
+# Opción A: Expo Web (desarrollo rápido)
+npm start --web
+# Acceder a: http://localhost:19000
+
+# Opción B: Emulador Android
+npm start
+# Presionar 'a' en terminal para abrir emulador
+
+# Opción C: Dispositivo físico
+npm start
+# Escanear código QR con Expo Go app
+
+# Opción D: Compilar APK
+eas build --platform android --profile preview
+# Descargar desde https://expo.dev/builds
+```
+
+---
 
 ## ⚙️ Configuración
 
-### Variables de Entorno
+### Variables de Entorno (.env en raíz del proyecto)
 
-#### Backend (.env en la raíz)
+```env
+# DATABASE
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=condominio_db
 
-| Variable | Descripción | Valor por Defecto |
-|----------|-------------|-------------------|
-| `DB_HOST` | Host de MySQL | `127.0.0.1` |
-| `DB_PORT` | Puerto de MySQL | `3306` |
-| `DB_USER` | Usuario de MySQL | `root` |
-| `DB_PASSWORD` | Contraseña de MySQL | (vacío) |
-| `DB_NAME` | Nombre de la base de datos | `condominio_db` |
-| `JWT_SECRET_KEY` | Clave secreta para JWT | `change-this-secret` |
-| `JWT_ALGORITHM` | Algoritmo JWT | `HS256` |
-| `JWT_ACCESS_TOKEN_EXPIRE_MINUTES` | Expiración del token (minutos) | `60` |
+# JWT
+JWT_SECRET_KEY=tu-clave-secreta-CAMBIAR-EN-PRODUCCION
+JWT_ALGORITHM=HS256
+JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440
 
-#### Frontend (.env.local en frontend/)
+# FIREBASE (opcional, solo si usas Google Sign-In)
+FIREBASE_PROJECT_ID=espacioadmin
+FIREBASE_PRIVATE_KEY_ID=xxx
+FIREBASE_PRIVATE_KEY=xxx
+FIREBASE_CLIENT_EMAIL=xxx@iam.gserviceaccount.com
+FIREBASE_CLIENT_ID=xxx
+FIREBASE_AUTH_URI=https://accounts.google.com/o/oauth2/auth
+FIREBASE_TOKEN_URI=https://oauth2.googleapis.com/token
+```
 
-| Variable | Descripción | Valor por Defecto |
-|----------|-------------|-------------------|
-| `VITE_API_URL` | URL base de la API | `http://localhost:8000/api/v1` |
+### Firebase Setup (Para Google Sign-In)
+
+1. Ir a https://console.firebase.google.com
+2. Crear proyecto "espacioadmin"
+3. Habilitar "Google Sign-In"
+4. OAuth 2.0 Client IDs:
+   - Tipo: Aplicación de navegador web
+   - URIs autorizados:
+     - `http://localhost:3000`
+     - `http://localhost:19000`
+     - `https://auth.expo.io/@cliptap/mobile`
+5. Android OAuth Client ID:
+   - Package: `com.espacioadmin.mobile`
+   - SHA-1: (obtener de EAS Build)
+6. Copiar credenciales a archivos de config
+
+---
 
 ## 📖 Uso
 
-### Acceso al Sistema
-
-1. **Abrir el frontend:** http://localhost:3000
-2. **Registrarse o iniciar sesión:**
-   - Si es la primera vez, usar el endpoint de registro
-   - O usar un usuario existente de la base de datos
-
 ### Usuarios de Prueba
 
-La base de datos incluye usuarios de ejemplo (ver `database/condominio_db.sql`):
+| Email | Contraseña | Rol |
+|-------|-----------|-----|
+| admin@test.com | password123 | Administrador |
+| conserje@test.com | password123 | Conserje |
+| residente@test.com | password123 | Residente |
 
-- **Residente:** `residente@example.com` / `password123`
-- **Administrador:** `admin@example.com` / `password123`
-- **Conserje:** `conserje@example.com` / `password123`
+O registrarse directamente en la aplicación.
 
-### Funcionalidades Principales
+### Flujo de Login
 
-- **Dashboard:** Estadísticas personalizadas según el rol
-- **Gastos Comunes:** Gestión de gastos del condominio
-- **Pagos:** Consulta y gestión de pagos
-- **Multas:** Gestión de multas a residentes
-- **Reservas:** Reserva de espacios comunes (multicancha, quincho, sala de eventos)
-- **Anuncios:** Publicación y visualización de anuncios
-- **Residentes:** Listado y gestión de residentes (solo admin/conserje)
-- **Morosidad:** Visualización de morosidad (admin/conserje/directiva)
-- **Perfil:** Gestión del perfil personal
+1. **Opción 1: Email y Contraseña**
+   - Ingresar email y contraseña
+   - Tomar token JWT del backend
+   - Guardar en SecureStore (móvil) o localStorage (web)
+
+2. **Opción 2: Google Sign-In**
+   - Tomar OAuth 2.0 de Google
+   - Obtener Firebase ID Token
+   - Enviar a `/api/v1/auth/firebase-login`
+   - Backend verifica con Firebase Admin SDK
+   - Backend crea/busca usuario en BD
+   - Emite JWT propio y lo devuelve
+   - App guarda JWT
+
+---
+
+## 🔐 Autenticación
+
+### Endpoints de Auth
+
+```
+POST   /api/v1/auth/register          - Registrar usuario
+POST   /api/v1/auth/login             - Login email/pwd
+POST   /api/v1/auth/firebase-login    - Login Google/Firebase
+GET    /api/v1/auth/me                - Usuario actual (requiere token)
+```
+
+### Roles y Permisos
+
+| Rol | Dashboard | Gastos | Pagos | Multas | Reservas | Anuncios |
+|-----|-----------|--------|-------|--------|----------|----------|
+| Residente | Propio | - | Propios | Propias | CRUD propias | Ver |
+| Conserje | Básico | - | Todos | Ver/Crear | Ver todas | - |
+| Directiva | Todo | Ver | - | Ver todas | - | CRUD |
+| Admin | Todo | CRUD | Todos | CRUD | Todos | CRUD |
+
+---
+
+## 🔌 API Endpoints Principales
+
+```
+# Autenticación
+POST   /api/v1/auth/register
+POST   /api/v1/auth/login
+POST   /api/v1/auth/firebase-login
+GET    /api/v1/auth/me
+
+# Dashboard
+GET    /api/v1/dashboard/stats/{usuario_id}
+
+# Gastos
+GET    /api/v1/gastos/vivienda/{vivienda_id}
+GET    /api/v1/gastos/usuario/{usuario_id}
+
+# Pagos
+GET    /api/v1/pagos/residente/{usuario_id}
+GET    /api/v1/pagos/todos
+
+# Multas
+GET    /api/v1/multas/residente/{usuario_id}
+GET    /api/v1/multas/todas
+POST   /api/v1/multas/
+
+# Reservas
+GET    /api/v1/reservas/espacios
+GET    /api/v1/reservas/espacios/{espacio}/disponibilidad
+POST   /api/v1/reservas/
+GET    /api/v1/reservas/usuario/{usuario_id}
+DELETE /api/v1/reservas/{reserva_id}
+
+# Anuncios
+GET    /api/v1/anuncios/activos
+POST   /api/v1/anuncios/
+PUT    /api/v1/anuncios/{anuncio_id}
+DELETE /api/v1/anuncios/{anuncio_id}
+```
+
+**Nota:** Todos requieren `Authorization: Bearer <token>` excepto login y register.
+
+---
+
+## 📱 Aplicación Móvil
+
+### Características
+
+- **Dual authentication:** Email/contraseña y Google Sign-In
+- **Tokens seguros:** Almacenados en expo-secure-store (encriptado)
+- **Multiplataforma:** iOS, Android, Web
+- **Responsive:** Optimizado para móvil, tablet y web
+
+### Ejecutar en Desarrollo
+
+**Expo Web** (más rápido):
+```bash
+cd mobile
+npm start --web
+# Acceder a: http://localhost:19000
+```
+
+**Emulador Android:**
+```bash
+cd mobile
+npm start
+# Presionar 'a' en terminal
+```
+
+**Dispositivo Físico:**
+```bash
+cd mobile
+npm start
+# Escanear QR con Expo Go (App Store / Google Play)
+```
+
+### Compilar APK
+
+```bash
+cd mobile
+eas build --platform android --profile preview
+```
+
+Descargar desde: https://expo.dev/builds
+
+**Requisitos:**
+- Cuenta en https://expo.dev (gratis)
+- Ejecutar `eas init` una vez
+
+### Estructura de Rutas (Expo Router)
+
+```
+app/
+├── login.js                 # Pantalla login
+├── _layout.js              # Layout principal
+├── (tabs)/
+│   ├── home.js            # Inicio
+│   ├── perfil.js          # Perfil de usuario
+│   └── ...
+└── ...
+```
+
+---
 
 ## 📁 Estructura del Proyecto
 
 ```
 sistema_de_gestion_condominio/
-├── backend/                    # Backend FastAPI
-│   ├── app/
-│   │   ├── api/
-│   │   │   └── v1/
-│   │   │       ├── router.py          # Router principal de la API
-│   │   │       └── routes/            # Endpoints por módulo
-│   │   │           ├── auth.py         # Autenticación (login, registro)
-│   │   │           ├── dashboard.py    # Estadísticas del dashboard
-│   │   │           ├── gastos.py      # Gastos comunes
-│   │   │           ├── pagos.py       # Pagos
-│   │   │           ├── multas.py      # Multas
-│   │   │           ├── reservas.py    # Reservas de espacios
-│   │   │           ├── anuncios.py    # Anuncios
-│   │   │           ├── residentes.py   # Residentes
-│   │   │           ├── morosidad.py    # Morosidad
-│   │   │           ├── perfil.py       # Perfil de usuario
-│   │   │           └── viviendas.py    # Viviendas
-│   │   ├── core/
-│   │   │   ├── config.py              # Configuración y variables de entorno
-│   │   │   ├── auth.py                # Dependencias de autenticación JWT
-│   │   │   ├── security.py            # Funciones de seguridad (bcrypt, JWT)
-│   │   │   └── google_calendar.py     # Configuración Google Calendar
-│   │   ├── db/
-│   │   │   ├── session.py             # Configuración SQLAlchemy
-│   │   │   └── deps.py                # Dependencias de base de datos
-│   │   ├── models/
-│   │   │   └── models.py              # Modelos SQLAlchemy
-│   │   ├── schemas/
-│   │   │   └── reservas.py            # Schemas Pydantic para reservas
-│   │   ├── services/
-│   │   │   └── google_calendar_service.py  # Servicio Google Calendar
-│   │   └── main.py                    # Aplicación FastAPI principal
-│   ├── alembic/                       # Migraciones de base de datos
-│   │   ├── env.py
-│   │   └── versions/
-│   ├── alembic.ini                     # Configuración Alembic
-│   ├── Dockerfile                      # Dockerfile del backend
-│   ├── start.sh                        # Script de inicio (Docker)
-│   ├── start-backend-internal.bat     # Script de inicio (Windows local)
-│   └── requirements.txt                # Dependencias Python
 │
-├── frontend/                    # Frontend React
+├── backend/                 # FastAPI + PostgreSQL
+│   ├── app/
+│   │   ├── api/v1/
+│   │   │   ├── router.py
+│   │   │   └── routes/
+│   │   │       ├── auth.py
+│   │   │       ├── dashboard.py
+│   │   │       ├── gastos.py
+│   │   │       ├── pagos.py
+│   │   │       ├── multas.py
+│   │   │       ├── reservas.py
+│   │   │       ├── anuncios.py
+│   │   │       └── ...
+│   │   ├── core/
+│   │   │   ├── auth.py    # Dependencias JWT
+│   │   │   ├── security.py # Bcrypt + JWT
+│   │   │   └── config.py  # Variables entorno
+│   │   ├── db/
+│   │   │   ├── session.py
+│   │   │   └── deps.py
+│   │   ├── models/
+│   │   │   └── models.py  # SQLAlchemy
+│   │   ├── schemas/
+│   │   │   └── *.py       # Pydantic
+│   │   └── main.py        # FastAPI app
+│   ├── requirements.txt
+│   ├── Dockerfile
+│   └── start.sh
+│
+├── frontend/               # React + Vite + Tailwind
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── pages/                 # Páginas principales
+│   │   │   ├── pages/
 │   │   │   │   ├── Dashboard.jsx
 │   │   │   │   ├── Gastos.jsx
 │   │   │   │   ├── Pagos.jsx
 │   │   │   │   ├── Multas.jsx
 │   │   │   │   ├── Reservas.jsx
 │   │   │   │   ├── Anuncios.jsx
-│   │   │   │   ├── Residentes.jsx
-│   │   │   │   ├── Morosidad.jsx
-│   │   │   │   ├── Perfil.jsx
 │   │   │   │   └── ...
-│   │   │   ├── Reservas/               # Componentes de reservas
 │   │   │   ├── LoginScreen.jsx
 │   │   │   ├── MainApp.jsx
-│   │   │   ├── Sidebar.jsx
-│   │   │   ├── ProtectedRoute.jsx
-│   │   │   └── ToastContainer.jsx
+│   │   │   └── ...
 │   │   ├── context/
-│   │   │   ├── AuthContext.jsx         # Contexto de autenticación
-│   │   │   └── ThemeContext.jsx        # Contexto de tema (dark/light)
-│   │   ├── hooks/
-│   │   │   └── usePermissions.js       # Hook de permisos por rol
+│   │   │   └── AuthContext.jsx
 │   │   ├── services/
-│   │   │   ├── api.js                  # Cliente API centralizado
-│   │   │   ├── pagosService.js         # Servicio de pagos
-│   │   │   ├── reservasService.js      # Servicio de reservas
-│   │   │   └── ufService.js            # Servicio UF (CMF)
-│   │   ├── App.jsx                     # Componente raíz
-│   │   ├── main.jsx                    # Punto de entrada
-│   │   └── index.css                   # Estilos globales
+│   │   │   └── api.js
+│   │   ├── App.jsx
+│   │   └── main.jsx
 │   ├── package.json
 │   ├── vite.config.js
-│   ├── tailwind.config.js
-│   └── start-frontend-internal.bat    # Script de inicio (Windows)
+│   └── tailwind.config.js
+│
+├── mobile/                 # React Native + Expo
+│   ├── app/
+│   │   ├── login.js       # Login screen
+│   │   ├── _layout.js
+│   │   └── (tabs)/
+│   │       ├── home.js
+│   │       ├── perfil.js
+│   │       └── ...
+│   ├── src/
+│   │   ├── context/
+│   │   │   └── AuthContext.js
+│   │   ├── services/
+│   │   │   └── api.js
+│   │   └── components/
+│   ├── firebaseConfig.js
+│   ├── app.json
+│   ├── eas.json
+│   └── package.json
 │
 ├── database/
-│   └── condominio_db.sql              # Script SQL inicial con datos de ejemplo
+│   └── condominio_db.sql  # Script SQL inicial
 │
-├── docker-compose.yml                 # Configuración Docker Compose
-├── start.bat                          # Script de inicio completo (Windows)
-├── start-backend.bat                  # Script solo backend (Windows)
+├── docs/                  # Documentación
+│   ├── DOCUMENTO_INTEGRACION_MOBILE.md
+│   ├── 02-ARCHITECTURE.md
+│   ├── 03-DEVELOPMENT.md
+│   └── ...
+│
+├── docker-compose.yml
+├── docker-compose-aws.yml
+├── .env.example
 ├── .gitignore
-└── README.md                          # Este archivo
+└── README.md
 ```
 
-## 🔐 Autenticación y Permisos
-
-### Autenticación JWT
-
-El sistema utiliza **JWT (JSON Web Tokens)** para autenticación:
-
-1. **Registro:** `POST /api/v1/auth/register`
-   ```json
-   {
-     "email": "usuario@example.com",
-     "password": "password123",
-     "nombre_completo": "Juan Pérez",
-     "rol": "Residente"
-   }
-   ```
-
-2. **Login:** `POST /api/v1/auth/login`
-   ```json
-   {
-     "email": "usuario@example.com",
-     "password": "password123"
-   }
-   ```
-
-3. **Respuesta:** Incluye un token JWT que debe enviarse en el header:
-   ```
-   Authorization: Bearer <token>
-   ```
-
-### Roles y Permisos
-
-| Rol | Descripción | Accesos Principales |
-|-----|-------------|---------------------|
-| **Residente** | Usuario final | Dashboard propio, Pagos propios, Multas propias, Reservas propias, Anuncios (lectura), Perfil |
-| **Conserje** | Personal de mantenimiento | Dashboard, Pagos (todos), Reservas (todas), Novedades (CRUD), Residentes (lectura), Multas (ver todas, crear), Morosidad (ver), Perfil |
-| **Directiva** | Miembros del comité | Dashboard, Gastos (lectura), Multas (ver todas), Anuncios (CRUD), Reportes, Morosidad (ver), Perfil |
-| **Administrador** | Administrador operativo | Dashboard, Gastos (CRUD), Pagos (todos), Residentes (CRUD), Multas (CRUD), Morosidad (ver/gestionar), Reservas (todas), Anuncios (CRUD), Reportes, Perfil |
-| **Super Admin** | Administrador del sistema | Dashboard, Condominios (CRUD), Usuarios (CRUD), Reportes, Perfil |
-
-### Matriz de Permisos Detallada
-
-| Módulo | Residente | Conserje | Directiva | Admin | Super Admin |
-|--------|-----------|----------|-----------|-------|-------------|
-| Dashboard | Ver (propio) | Ver (básico) | Ver (todo) | Ver (todo) | Ver (todo) |
-| Gastos | Ver (propios) | - | Ver (todo) | CRUD | CRUD |
-| Pagos | Ver (propios) | Ver (todos) | - | Ver (todos) | Ver (todos) |
-| Multas | Ver (propias) | Ver/Crear (todas) | Ver (todas) | CRUD | CRUD |
-| Reservas | CRUD (propias) | Ver/Gestionar (todas) | - | Ver/Gestionar (todas) | Ver/Gestionar (todas) |
-| Anuncios | Ver | - | CRUD | CRUD | CRUD |
-| Residentes | - | Ver | - | CRUD | CRUD |
-| Morosidad | - | Ver | Ver | Ver/Gestionar | Ver |
-| Novedades | - | CRUD | - | - | - |
-| Reportes | - | - | Ver | Ver | Ver |
-| Condominios | - | - | - | - | CRUD |
-| Usuarios | - | - | - | - | CRUD |
-| Perfil | Editar (propio) | Editar (propio) | Editar (propio) | Editar (propio) | Editar (propio) |
-
-## 🔌 API Endpoints
-
-### Autenticación
-
-- `POST /api/v1/auth/register` - Registrar nuevo usuario
-- `POST /api/v1/auth/login` - Iniciar sesión
-- `POST /api/v1/auth/token` - Obtener token (OAuth2 compatible)
-- `GET /api/v1/auth/me` - Obtener usuario actual
-
-### Dashboard
-
-- `GET /api/v1/dashboard/stats/{usuario_id}` - Estadísticas del dashboard
-
-### Gastos Comunes
-
-- `GET /api/v1/gastos/vivienda/{vivienda_id}` - Listar gastos de una vivienda
-- `GET /api/v1/gastos/usuario/{usuario_id}` - Listar gastos de un usuario
-
-### Pagos
-
-- `GET /api/v1/pagos/residente/{usuario_id}` - Desglose de pagos del residente
-- `GET /api/v1/pagos/todos` - Listar todos los pagos (admin/conserje)
-
-### Multas
-
-- `GET /api/v1/multas/residente/{usuario_id}` - Multas del residente
-- `GET /api/v1/multas/todas` - Todas las multas (admin/conserje/directiva)
-- `POST /api/v1/multas/` - Crear multa (admin/conserje)
-
-### Reservas
-
-- `GET /api/v1/reservas/espacios` - Listar espacios comunes
-- `GET /api/v1/reservas/espacios/{espacio}/disponibilidad` - Disponibilidad de un espacio
-- `POST /api/v1/reservas/` - Crear reserva
-- `GET /api/v1/reservas/usuario/{usuario_id}` - Reservas del usuario
-- `GET /api/v1/reservas/todas` - Todas las reservas (admin/conserje)
-- `DELETE /api/v1/reservas/{reserva_id}` - Cancelar reserva
-
-### Anuncios
-
-- `GET /api/v1/anuncios/activos` - Listar anuncios activos
-- `GET /api/v1/anuncios/condominio/{condominio_id}` - Anuncios de un condominio
-
-### Residentes
-
-- `GET /api/v1/residentes/` - Listar residentes (admin/conserje)
-
-### Morosidad
-
-- `GET /api/v1/morosidad/` - Estado de morosidad (admin/conserje/directiva)
-
-### Perfil
-
-- `GET /api/v1/perfil/{usuario_id}` - Obtener perfil
-- `PUT /api/v1/perfil/{usuario_id}` - Actualizar perfil
-- `PUT /api/v1/perfil/{usuario_id}/notificaciones` - Actualizar notificaciones
-
-### Viviendas
-
-- `GET /api/v1/viviendas/` - Listar viviendas (admin/conserje)
-
-**Nota:** Todos los endpoints (excepto `/auth/register` y `/auth/login`) requieren autenticación JWT.
+---
 
 ## 🗄️ Base de Datos
 
-### Esquema Principal
+### Motor: PostgreSQL
 
-- **condominios** - Información de condominios
-- **viviendas** - Viviendas del condominio
-- **usuarios** - Usuarios del sistema
-- **residentes_viviendas** - Relación residente-vivienda
-- **gastos_comunes** - Gastos comunes por vivienda
-- **pagos** - Pagos realizados
-- **multas** - Multas aplicadas
-- **espacios_comunes** - Espacios comunes disponibles
-- **reservas** - Reservas de espacios comunes
-- **anuncios** - Anuncios del condominio
+**Tablas principales:**
+- `usuario` - Usuarios del sistema
+- `vivienda` - Viviendas del condominio
+- `gasto_comun` - Gastos compartidos
+- `pago` - Pagos realizados
+- `multa` - Multas aplicadas
+- `espacio_comun` - Espacios comunes
+- `reserva` - Reservas de espacios
+- `anuncio` - Anuncios
 
-### Inicialización
-
-La base de datos se inicializa automáticamente con `database/condominio_db.sql` cuando se usa Docker Compose, o manualmente importando el script en MySQL.
-
-### Migraciones
-
-El proyecto usa **Alembic** para gestionar migraciones:
+**Inicialización automática:**
+SQLAlchemy crea las tablas al iniciar la app. Para datos iniciales:
 
 ```bash
-# Crear nueva migración
-cd backend
-alembic revision --autogenerate -m "descripción del cambio"
-
-# Aplicar migraciones
-alembic upgrade head
-
-# Revertir última migración
-alembic downgrade -1
-
-# Ver historial
-alembic history
+psql -U postgres -d condominio_db < database/condominio_db.sql
 ```
 
-## 💻 Desarrollo
-
-### Scripts de Inicio (Windows)
-
-- **`start.bat`** - Inicia backend y frontend juntos
-- **`start-backend.bat`** - Solo backend
-- **`backend/start-backend-internal.bat`** - Backend (interno)
-- **`frontend/start-frontend-internal.bat`** - Frontend (interno)
-
-### Estructura de Código
-
-#### Backend
-
-- **FastAPI** con estructura modular
-- **SQLAlchemy** para ORM
-- **Pydantic** para validación de datos
-- **Alembic** para migraciones
-- **python-jose** para JWT
-- **bcrypt** para hash de contraseñas
-
-#### Frontend
-
-- **React 18+** con hooks
-- **Vite** como bundler
-- **React Router** para navegación
-- **Tailwind CSS** para estilos
-- **Axios** para peticiones HTTP
-- **Context API** para estado global
-
-### Agregar Nuevo Endpoint
-
-1. **Crear ruta en `backend/app/api/v1/routes/`**
-2. **Registrar en `backend/app/api/v1/router.py`**
-3. **Crear componente en `frontend/src/components/pages/`**
-4. **Agregar ruta en `frontend/src/components/MainApp.jsx`**
-5. **Actualizar permisos en `frontend/src/hooks/usePermissions.js`**
-6. **Actualizar Sidebar y ProtectedRoute**
+---
 
 ## 🐳 Docker
 
-### Docker Compose
+### Iniciar con Docker Compose
 
-El archivo `docker-compose.yml` incluye:
+```bash
+docker-compose up -d
+```
 
-- **Backend:** Servicio FastAPI en puerto 8000
-- **MySQL:** Base de datos en puerto 3306
+**Servicios:**
+- Backend en puerto 8000
+- PostgreSQL en puerto 5432
+- Frontend en puerto 3000 (opcional)
 
 ### Comandos Útiles
 
 ```bash
-# Iniciar servicios
-docker-compose up -d
-
 # Ver logs
 docker-compose logs -f backend
 docker-compose logs -f db
 
-# Detener servicios
+# Detener
 docker-compose down
 
-# Reconstruir imágenes
+# Reconstruir
 docker-compose build --no-cache
 
-# Acceder al contenedor del backend
+# Acceder a bash
 docker-compose exec backend bash
-
-# Ejecutar migraciones en Docker
-docker-compose exec backend alembic upgrade head
 ```
+
+---
 
 ## 🔧 Troubleshooting
 
-### Error: "No se puede conectar a la base de datos"
+### "Cannot connect to database"
+```bash
+# Verificar que PostgreSQL esté corriendo
+# Si usas Docker: docker-compose up -d db
+# Si es local: asegúrate que el servicio esté activo
+```
 
-**Solución:**
-1. Verificar que MySQL esté corriendo
-2. Verificar credenciales en `.env`
-3. Verificar que la base de datos `condominio_db` exista
-4. Si usas Docker, verificar que el contenedor `db` esté corriendo
-
-### Error: "ModuleNotFoundError: No module named 'jose'"
-
-**Solución:**
+### "ModuleNotFoundError" en backend
 ```bash
 cd backend
 pip install -r requirements.txt
 ```
 
-### Error: "401 Unauthorized" en el frontend
+### "CORS error" en frontend
+- El backend ya soporta `localhost:3000`, `localhost:19000`
+- Para otro puerto, agregar en `backend/app/main.py`
 
-**Solución:**
-1. Verificar que el token JWT esté siendo enviado en los headers
-2. Verificar que el token no haya expirado
-3. Hacer login nuevamente
+### "Something went wrong trying to finish signing in" (Expo Web)
+```bash
+# Limpiar cache
+npm cache clean --force
 
-### Error: "CORS policy" en el navegador
+# Reiniciar Expo
+npm start --web
+```
 
-**Solución:**
-- El backend ya tiene CORS configurado para `localhost:3000` y `localhost:3001`
-- Si usas otro puerto, agregarlo en `backend/app/main.py`
+### Google Sign-In no funciona en APK Android
+1. Verificar SHA-1 en Google Cloud Console
+2. Verificar package name es `com.espacioadmin.mobile`
+3. Verificar Firebase Project ID en `firebaseConfig.js`
 
-### El frontend no carga datos
+### App móvil no se conecta al backend
+- Verificar URL en `mobile/src/services/api.js`
+- En desarrollo: usar `ngrok` para exponer backend
+- En producción: usar URL HTTPS del servidor real
 
-**Solución:**
-1. Verificar que el backend esté corriendo en `http://localhost:8000`
-2. Verificar la variable `VITE_API_URL` en el frontend
-3. Revisar la consola del navegador para errores
-4. Verificar que el token JWT sea válido
+---
 
 ## 📚 Documentación Adicional
 
-- **Swagger UI:** http://localhost:8000/docs
-- **ReDoc:** http://localhost:8000/redoc
-- **OpenAPI JSON:** http://localhost:8000/openapi.json
+- **API Swagger:** http://localhost:8000/docs
+- **API ReDoc:** http://localhost:8000/redoc
+- **Integración Mobile:** `/docs/DOCUMENTO_INTEGRACION_MOBILE.md`
+- **Arquitectura:** `/docs/02-ARCHITECTURE.md`
+- **Desarrollo:** `/docs/03-DEVELOPMENT.md`
+
+---
 
 ## 🔒 Seguridad
 
-### Recomendaciones
+### En Producción
 
-1. **Cambiar `JWT_SECRET_KEY`** en producción
-2. **Usar HTTPS** en producción
-3. **Validar todas las entradas** del usuario
-4. **Implementar rate limiting** para prevenir abuso
-5. **Hacer backups regulares** de la base de datos
-6. **Mantener dependencias actualizadas**
+1. ✅ **Cambiar `JWT_SECRET_KEY`** en `.env`
+2. ✅ **Usar HTTPS** (no HTTP)
+3. ✅ **Configurar CORS** específicamente
+4. ✅ **Rate limiting** para prevenir abuso
+5. ✅ **Backups regulares** de PostgreSQL
+6. ✅ **Mantener dependencias actualizadas**
+7. ✅ **Variables de entorno** para secretos (no en código)
 
-## 📝 Licencia
+---
 
-Este proyecto es de uso interno.
+## 📝 Scripts Disponibles
 
-## 👥 Contribución
+### Backend
+```bash
+uvicorn app.main:app --reload      # Desarrollo
+gunicorn app.main:app --workers 4  # Producción
+```
 
-Para contribuir al proyecto:
+### Frontend
+```bash
+npm run dev      # Desarrollo
+npm run build    # Compilar producción
+npm run preview  # Vista previa producción
+```
 
-1. Crear una rama desde `main`
-2. Realizar los cambios
-3. Probar localmente
-4. Crear un Pull Request
+### Mobile
+```bash
+npm start --web              # Expo Web
+npm start                    # Desarrollo
+eas build --platform android # Compilar APK
+```
+
+---
+
+## 💡 Tips
+
+1. **Desarrollo rápido móvil:** Usa Expo Web, no necesitas compilar APK
+2. **Debugging:** Abre Swagger http://localhost:8000/docs para probar endpoints
+3. **Firebase:** Asegúrate de que OAuth URIs estén autorizados
+4. **Tokens:** Se almacenan en SecureStore (móvil) y localStorage (web)
+5. **API:** Todos los endpoints protegidos requieren header `Authorization: Bearer <token>`
+
+---
 
 ## 📞 Soporte
 
-Para problemas o preguntas:
-- Revisar la documentación en `/docs` (si existe)
-- Revisar los logs del servidor
-- Consultar la documentación de Swagger en `/docs`
+Para problemas:
+1. Revisar `/docs` para documentación detallada
+2. Revisar logs: `docker-compose logs backend`
+3. Consultar Swagger: http://localhost:8000/docs
+4. Revisar console en navegador (browser DevTools)
 
 ---
 
 **Desarrollado con ❤️ para la gestión eficiente de condominios**
+
+Última actualización: **Noviembre 2025**  
+Versión: **1.0.0**

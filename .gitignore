@@ -71,3 +71,22 @@ logs/
 # AWS & Security
 *.pem
 PT2025.pem
+
+# Keystores y certificados
+*.jks
+*.keystore
+
+# Firebase credentials
+firebase-credentials.json
+
+# APKs (excepto el entregable)
+application-*.apk
+
+# AWS
+*.pem
+docker-compose-aws.yml
+
+# Scripts obsoletos
+start.bat
+start-backend.bat
+*-internal.bat
