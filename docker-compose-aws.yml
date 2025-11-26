@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: condominio-db
+    restart: always
+    environment:
+      POSTGRES_DB: condominio
+      POSTGRES_USER: condouser
+      POSTGRES_PASSWORD: condopass
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U condouser -d condominio"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: condominio-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: condouser
+      DB_PASSWORD: condopass
+      DB_NAME: condominio
+      DB_DRIVER: postgresql+psycopg2
+      DATABASE_URL: postgresql+psycopg2://condouser:condopass@db:5432/condominio
+      ALEMBIC_DATABASE_URL: postgresql+psycopg2://condouser:condopass@db:5432/condominio
+      JWT_SECRET_KEY: super-secret-key-change-me
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: 120
+      FIREBASE_CREDENTIALS_PATH: /app/firebase-credentials.json
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app:ro
+      - ./backend/firebase-credentials.json:/app/firebase-credentials.json:ro
+    command: ["./start.sh"]
+
+volumes:
+  db_data:

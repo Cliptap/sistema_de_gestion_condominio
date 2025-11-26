@@ -245,7 +245,6 @@ async def _stats_residente(usuario_id: int, db: Session) -> Dict[str, Any]:
     if not vivienda_ids:
         return {
             "stats": [
-                {"title": "Mi Saldo", "value": "$0", "change": "Sin vivienda", "icon": "money", "color": "gray"},
                 {"title": "Mis Reservas", "value": "0", "change": "Sin reservas", "icon": "calendar", "color": "gray"},
                 {"title": "Multas", "value": "0", "change": "Al día", "icon": "warning", "color": "green"},
                 {"title": "Gastos Pendientes", "value": "$0", "change": "Al día", "icon": "money", "color": "green"}
@@ -253,47 +252,45 @@ async def _stats_residente(usuario_id: int, db: Session) -> Dict[str, Any]:
             "recent_activity": []
         }
     
-    # Gastos comunes pendientes
+    # Gastos comunes pendientes (en UF, convertir a CLP)
     gastos_pendientes = db.query(GastoComun).filter(
         GastoComun.vivienda_id.in_(vivienda_ids),
         GastoComun.estado == 'pendiente'
     ).all()
     
-    total_pendiente = sum(decimal_to_float(g.monto_total) for g in gastos_pendientes)
+    # Importar función para obtener valor UF
+    from .uf import get_current_uf
+    uf_data = await get_current_uf()
+    uf_value = uf_data.get("value_clp", 39643.59)
     
-    # Pagos realizados este mes
-    mes_actual = datetime.now().month
-    ano_actual = datetime.now().year
-    pagos_mes = db.query(Pago).join(GastoComun).filter(
-        Pago.usuario_id == usuario_id,
-        GastoComun.mes == mes_actual,
-        GastoComun.ano == ano_actual
+    # Calcular total de gastos comunes en CLP
+    total_gastos_comunes = sum(decimal_to_float(g.monto_total) * uf_value for g in gastos_pendientes)
+    
+    # Multas pendientes (obtener monto total)
+    multas = db.query(Multa).filter(
+        Multa.vivienda_id.in_(vivienda_ids)
     ).all()
-    total_pagado_mes = sum(decimal_to_float(p.monto_pagado) for p in pagos_mes)
+    total_multas = sum(decimal_to_float(m.monto) for m in multas)
+    multas_count = len(multas)
     
-    # Saldo (gastos pendientes - pagos realizados)
-    saldo = total_pendiente - total_pagado_mes
+    # Reservas pendientes de pago
+    reservas_pendientes_pago = db.query(Reserva).filter(
+        Reserva.usuario_id == usuario_id,
+        Reserva.estado_pago == 'pendiente'
+    ).all()
+    total_reservas = sum(decimal_to_float(r.monto_pago) for r in reservas_pendientes_pago)
     
-    # Mis reservas activas
+    # TOTAL: gastos comunes + multas + reservas
+    total_pendiente = total_gastos_comunes + total_multas + total_reservas
+    
+    # Mis reservas activas (futuras)
     reservas_activas = db.query(Reserva).filter(
         Reserva.usuario_id == usuario_id,
         Reserva.fecha_hora_inicio >= datetime.now()
     ).count()
     
-    # Multas pendientes
-    multas_pendientes = db.query(Multa).filter(
-        Multa.vivienda_id.in_(vivienda_ids)
-    ).count()
-    
     return {
         "stats": [
-            {
-                "title": "Mi Saldo",
-                "value": f"${saldo:,.0f}",
-                "change": "Pendiente" if saldo > 0 else "Al día",
-                "icon": "money",
-                "color": "green" if saldo <= 0 else "red"
-            },
             {
                 "title": "Mis Reservas",
                 "value": str(reservas_activas),
@@ -303,17 +300,17 @@ async def _stats_residente(usuario_id: int, db: Session) -> Dict[str, Any]:
             },
             {
                 "title": "Multas",
-                "value": str(multas_pendientes),
-                "change": "Pendientes" if multas_pendientes > 0 else "Al día",
+                "value": str(multas_count),
+                "change": f"${total_multas:,.0f}" if multas_count > 0 else "Al día",
                 "icon": "warning",
-                "color": "green" if multas_pendientes == 0 else "red"
+                "color": "green" if multas_count == 0 else "red"
             },
             {
                 "title": "Gastos Pendientes",
                 "value": f"${total_pendiente:,.0f}",
-                "change": f"{len(gastos_pendientes)} facturas",
+                "change": f"GC + Multas + Reservas",
                 "icon": "money",
-                "color": "orange"
+                "color": "orange" if total_pendiente > 0 else "green"
             }
         ],
         "recent_activity": await _actividad_reciente_residente(usuario_id, db)

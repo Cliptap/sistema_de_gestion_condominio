@@ -13,7 +13,7 @@ puedan acceder a ellas.
 from fastapi import APIRouter, Depends
 
 from app.core.auth import get_current_active_user
-from .routes import auth, gastos, reservas, pagos, dashboard, multas, anuncios, perfil, residentes, morosidad, viviendas
+from .routes import auth, gastos, reservas, pagos, dashboard, multas, anuncios, perfil, residentes, morosidad, viviendas, uf
 
 # Router principal de la API
 api_router = APIRouter()
@@ -23,6 +23,8 @@ api_router = APIRouter()
 # ============================================================================
 # Solo las rutas de autenticación (login, register) son públicas
 api_router.include_router(auth.router, prefix="/auth", tags=["auth"])
+# UF es público para que la app pueda consultar sin autenticación
+api_router.include_router(uf.router, prefix="/uf", tags=["uf"])
 
 # ============================================================================
 # RUTAS PROTEGIDAS (Requieren autenticación JWT)
